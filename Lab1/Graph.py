@@ -90,11 +90,11 @@ class Graph:
         # Generate schedule
         schedule = self.generate_schedule(end_node, previous_node, previous_line, previous_departure_time)
 
-        return distances_from_start[end_node], computation_time, schedule
+        return distances_from_start[end_node], computation_time, schedule, len(visited)
     
     def astar(self, start_node, end_node, start_time, criterion='t'):
         def compare_distances(tuple):
-            return tuple[2]
+            return tuple[2], tuple[0]
         #based on Haversine formula
         def calculate_distance(start_latitude, start_longitude, end_latitude, end_longitude):
             radius = 6371000
@@ -113,8 +113,8 @@ class Graph:
         start_node = self.find_node_from_name(start_node)
         end_node = self.find_node_from_name(end_node)
         # Initialize distances to infinity for all nodes
-        distances_from_start = {node: float('inf') for node in self.nodes}
-        distances_from_start[start_node] = 0
+        travel_times_from_start = {node: float('inf') for node in self.nodes}
+        travel_times_from_start[start_node] = 0
 
         # Priority queue to keep track of nodes to visit
         priority_queue = [(0, start_node, 0)]
@@ -131,7 +131,7 @@ class Graph:
         start_time_computation = datetime.now()
 
         while priority_queue:
-            current_distance, current_node, current_total_distance = heappop(priority_queue)
+            current_travel_time, current_node, current_total_distance = heappop(priority_queue)
 
             # If the current node is the end node, we can stop
             if current_node == end_node:
@@ -140,16 +140,15 @@ class Graph:
             for neighbor, edges in current_node.connections.items():
                 if (neighbor not in visited):
                     for edge in edges:
-                        if time_string_to_int(edge.departure_time) >= start_time + int(current_distance):
+                        if time_string_to_int(edge.departure_time) >= start_time + int(current_travel_time):
                             travel_time = time_string_to_int(edge.arrival_time) - start_time
-                            travel_distance = calculate_distance(float(current_node.latitude), float(current_node.longitude), float(neighbor.latitude), float(neighbor.longitude))
-                            total_travel_time = travel_time + travel_distance / AVG_SPEED
 
-                            if travel_time < distances_from_start[neighbor]:
-                                distances_from_start[neighbor] = travel_time
+                            if travel_time < travel_times_from_start[neighbor]:
+                                distance_to_end = calculate_distance(float(end_node.latitude), float(end_node.longitude), float(neighbor.latitude), float(neighbor.longitude))
+                                travel_times_from_start[neighbor] = travel_time
                                 neighbor.parent = current_node
                                 neighbor.used_line = edge.line
-                                priority_queue.insert(0, (travel_time, neighbor, total_travel_time))
+                                priority_queue.insert(0, (travel_time, neighbor, distance_to_end))
                                 priority_queue.sort(key=compare_distances)
                                 previous_node[neighbor] = current_node
                                 previous_line[neighbor] = edge.line
@@ -164,7 +163,7 @@ class Graph:
         # Generate schedule
         schedule = self.generate_schedule(end_node, previous_node, previous_line, previous_departure_time)
 
-        return distances_from_start[end_node], computation_time, schedule
+        return travel_times_from_start[end_node], computation_time, schedule, len(visited)
 
     def calculate_travel_time(self, start_time, arrival_time_neighbor):
         return time_string_to_int(arrival_time_neighbor) - time_string_to_int(start_time)
