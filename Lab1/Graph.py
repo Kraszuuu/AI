@@ -1,6 +1,9 @@
 import Node
 from heapq import heappush, heappop
 from datetime import datetime, timedelta
+from math import radians, sin, cos, atan2, sqrt
+AVG_SPEED = 8
+
 class Graph:
     def __init__(self) -> None:
         self.nodes = set()
@@ -27,12 +30,11 @@ class Graph:
         while current_node:
             previous = previous_node[current_node]
             if previous:
-                line = previous_line[current_node]
                 schedule.insert(0, (previous_line[current_node], previous_departure_time[current_node], previous.name))
             current_node = previous
         return schedule
         
-    def dijkstra(self, start_node, end_node, start_time, criterion):
+    def dijkstra(self, start_node, end_node, start_time):
         def compare_distances(tuple):
             return tuple[0]
         
@@ -90,9 +92,22 @@ class Graph:
 
         return distances_from_start[end_node], computation_time, schedule
     
-    def astar(self, start_node, end_node, start_time, criterion):
+    def astar(self, start_node, end_node, start_time, criterion='t'):
         def compare_distances(tuple):
-            return tuple[0]
+            return tuple[2]
+        #based on Haversine formula
+        def calculate_distance(start_latitude, start_longitude, end_latitude, end_longitude):
+            radius = 6371000
+            start_latitude = radians(start_latitude)
+            start_longitude = radians(start_longitude)
+            end_latitude = radians(end_latitude)
+            end_longitude = radians(end_longitude)
+            d_lat = start_latitude - end_latitude
+            d_lon = start_longitude - end_longitude
+            a = sin(d_lat / 2)**2 + cos(start_latitude) * cos(end_latitude) * sin(d_lon / 2)**2
+            c = 2 * atan2(sqrt(a), sqrt(1 - a))
+            distance = radius * c
+            return distance
         
         start_time = time_string_to_int(start_time)
         start_node = self.find_node_from_name(start_node)
@@ -102,7 +117,7 @@ class Graph:
         distances_from_start[start_node] = 0
 
         # Priority queue to keep track of nodes to visit
-        priority_queue = [(0, start_node)]
+        priority_queue = [(0, start_node, 0)]
 
         # Dictionary to track the previous node and line for each node
         previous_node = {node: None for node in self.nodes}
@@ -116,7 +131,7 @@ class Graph:
         start_time_computation = datetime.now()
 
         while priority_queue:
-            current_distance, current_node = heappop(priority_queue)
+            current_distance, current_node, current_total_distance = heappop(priority_queue)
 
             # If the current node is the end node, we can stop
             if current_node == end_node:
@@ -127,11 +142,14 @@ class Graph:
                     for edge in edges:
                         if time_string_to_int(edge.departure_time) >= start_time + int(current_distance):
                             travel_time = time_string_to_int(edge.arrival_time) - start_time
+                            travel_distance = calculate_distance(float(current_node.latitude), float(current_node.longitude), float(neighbor.latitude), float(neighbor.longitude))
+                            total_travel_time = travel_time + travel_distance / AVG_SPEED
+
                             if travel_time < distances_from_start[neighbor]:
                                 distances_from_start[neighbor] = travel_time
                                 neighbor.parent = current_node
                                 neighbor.used_line = edge.line
-                                priority_queue.insert(0, (travel_time, neighbor))
+                                priority_queue.insert(0, (travel_time, neighbor, total_travel_time))
                                 priority_queue.sort(key=compare_distances)
                                 previous_node[neighbor] = current_node
                                 previous_line[neighbor] = edge.line

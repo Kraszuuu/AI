@@ -34,60 +34,86 @@ def build_graph() -> Graph.Graph:
     print("Czas budowania grafu: ", execution_time)
     return graph
 
-def test1():
-    shortest_distance, computation_time, schedule = graph.dijkstra("KROMERA", "Katedra", "21:15:00")
+def print_results(shortest_distance, computation_time, schedule):
+    previous_line = None
     for line, departure_time, stop_name in schedule:
+        if(previous_line != line):
+            previous_line = line
             print(f"Line: {line}, Departure Time: {departure_time}, Stop: {stop_name}")
-
     # Print shortest distance and computation time
     print("Shortest distance:", shortest_distance, "s")
     print("Computation time:", computation_time)
     print("=================================================================")
+    
 
-def test2():
-    shortest_distance, computation_time, schedule = graph.dijkstra("KROMERA", "FAT", "21:15:00")
-    for line, departure_time, stop_name in schedule:
-            print(f"Line: {line}, Departure Time: {departure_time}, Stop: {stop_name}")
+def dijkstra_tests():
+    def test1():
+        shortest_distance, computation_time, schedule = graph.dijkstra("KROMERA", "Katedra", "21:15:00")
+        print_results(shortest_distance, computation_time, schedule)
 
-    # Print shortest distance and computation time
-    print("Shortest distance:", shortest_distance, "s")
-    print("Computation time:", computation_time)
-    print("=================================================================")
+    def test2():
+        shortest_distance, computation_time, schedule = graph.dijkstra("KROMERA", "FAT", "21:15:00")
+        print_results(shortest_distance, computation_time, schedule)
 
-def test3():
-    shortest_distance, computation_time, schedule = graph.dijkstra("Daszyńskiego", "Inowrocławska", "22:55:00")
-    for line, departure_time, stop_name in schedule:
-            print(f"Line: {line}, Departure Time: {departure_time}, Stop: {stop_name}")
+    def test3():
+        shortest_distance, computation_time, schedule = graph.dijkstra("Daszyńskiego", "Inowrocławska", "22:55:00")
+        print_results(shortest_distance, computation_time, schedule)
 
-    # Print shortest distance and computation time
-    print("Shortest distance:", shortest_distance, "s")
-    print("Computation time:", computation_time)
-    print("=================================================================")
+    def test4():
+        shortest_distance, computation_time, schedule = graph.dijkstra("Nowowiejska", "ROD Zgoda", "12:55:00")
+        print_results(shortest_distance, computation_time, schedule)
 
-def test4():
-    shortest_distance, computation_time, schedule = graph.dijkstra("Nowowiejska", "ROD Zgoda", "12:55:00")
-    for line, departure_time, stop_name in schedule:
-            print(f"Line: {line}, Departure Time: {departure_time}, Stop: {stop_name}")
+    def test5():
+        shortest_distance, computation_time, schedule = graph.dijkstra("Warmińska", "WOJNÓW (pętla)", "11:00:00")
+        print_results(shortest_distance, computation_time, schedule)
 
-    # Print shortest distance and computation time
-    print("Shortest distance:", shortest_distance, "s")
-    print("Computation time:", computation_time)
-    print("=================================================================")
+    dijkstra_time_start = time.time()
+    test1()
+    test2()
+    test3()
+    test4()
+    test5()
+    dijkstra_time_end = time.time()
+    total_dijkstra_time = dijkstra_time_end - dijkstra_time_start
+    print("*******************************************************************")
+    print(f'Total dijkstra time: {total_dijkstra_time}')
+    print("*******************************************************************")
 
-def test5():
-    shortest_distance, computation_time, schedule = graph.dijkstra("Warmińska", "WOJNÓW (pętla)", "21:00:00")
-    for line, departure_time, stop_name in schedule:
-            print(f"Line: {line}, Departure Time: {departure_time}, Stop: {stop_name}")
+def astar_tests():
+    def test1():
+        shortest_distance, computation_time, schedule = graph.astar("KROMERA", "Katedra", "21:15:00")
+        print_results(shortest_distance, computation_time, schedule)
 
-    # Print shortest distance and computation time
-    print("Shortest distance:", shortest_distance, "s")
-    print("Computation time:", computation_time)
-    print("=================================================================")
+    def test2():
+        shortest_distance, computation_time, schedule = graph.astar("KROMERA", "FAT", "21:15:00")
+        print_results(shortest_distance, computation_time, schedule)
+        print("=================================================================")
+
+    def test3():
+        shortest_distance, computation_time, schedule = graph.astar("Daszyńskiego", "Inowrocławska", "22:55:00")
+        print_results(shortest_distance, computation_time, schedule)
+
+    def test4():
+        shortest_distance, computation_time, schedule = graph.astar("Nowowiejska", "ROD Zgoda", "12:55:00")
+        print_results(shortest_distance, computation_time, schedule)
+
+    def test5():
+        shortest_distance, computation_time, schedule = graph.astar("Warmińska", "WOJNÓW (pętla)", "11:00:00")
+        print_results(shortest_distance, computation_time, schedule)
+
+    astar_time_start = time.time()
+    test1()
+    test2()
+    test3()
+    test4()
+    test5()
+    astar_time_end = time.time()
+    total_astar_time = astar_time_end - astar_time_start
+    print("*******************************************************************")
+    print(f'Total A* time: {total_astar_time}')
+    print("*******************************************************************")
 
 graph = build_graph()
 
-test1()
-test2()
-test3()
-test4()
-test5()
+dijkstra_tests()
+astar_tests()
