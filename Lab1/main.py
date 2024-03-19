@@ -115,5 +115,15 @@ def astar_tests():
 
 graph = build_graph()
 
+# Calculate average distance between nodes
+total_distance = 0
+num_edges = 0
+for node in graph.nodes:
+    for neighbor, edges in node.connections.items():
+        for edge in edges:
+            total_distance += graph.euclidean_distance(node, neighbor)
+            num_edges += 1
+average_distance = total_distance / num_edges
+print(average_distance)
 # dijkstra_tests()
-astar_tests()
+# astar_tests()
