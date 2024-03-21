@@ -5,8 +5,6 @@ class Node:
         self.latitude : float = latitude
         self.longitude : float = longitude
 
-        # self.parent : Node = None
-        # self.used_line : str = None
         self.latitude_list : list = [latitude]
         self.longitude_list : list = [longitude]
         self.connections : dict = dict()

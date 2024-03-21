@@ -7,6 +7,7 @@ AVG_SPEED = 4
 class Graph:
     def __init__(self) -> None:
         self.nodes = set()
+        # self.edges = self.create_edges_dict()
 
     #adds node to set
     def work_on_node(self, name : str, latitude : float, longitude : float) -> Node:
@@ -58,7 +59,6 @@ class Graph:
 
         # Start time of computation
         start_time_computation = datetime.now()
-
         while priority_queue:
             current_distance, current_node = heappop(priority_queue)
 
@@ -72,8 +72,6 @@ class Graph:
                     neighbor_travel_time = time_string_to_int(edge.arrival_time) - start_time
                     if neighbor_travel_time >= times_from_start[neighbor]: continue
                     times_from_start[neighbor] = neighbor_travel_time
-                    # neighbor.parent = current_node
-                    # neighbor.used_line = edge.line
                     priority_queue.insert(0, (neighbor_travel_time, neighbor))
                     priority_queue.sort(key=compare_distances)
                     previous_node[neighbor] = current_node
@@ -93,70 +91,115 @@ class Graph:
     
     def astar(self, start_node, end_node, start_time, criterion='t'):
         def compare_distances(tuple):
-            return tuple[2], tuple[0]
+            if criterion == 't': return tuple[2], tuple[0]
+            elif criterion == 'p': pass ################################
         
-        def estimate_time_between_points(start_latitude, start_longitude, end_latitude, end_longitude):
+        def calculate_distance(start_latitude, start_longitude, end_latitude, end_longitude):
             lat_diff = abs(float(start_latitude) - float(end_latitude)) * 111000
             lon_diff = abs(float(start_longitude) - float(end_longitude)) * 111000
-            result = (lat_diff ** 2 + lon_diff ** 2) ** 0.5 / AVG_SPEED
+            result = (lat_diff ** 2 + lon_diff ** 2) ** 0.5
             return result
-            # radius = 6371000
-            # start_latitude = radians(float(start_latitude))
-            # start_longitude = radians(float(start_longitude))
-            # end_latitude = radians(float(end_latitude))
-            # end_longitude = radians(float(end_longitude))
-            # d_lat = start_latitude - end_latitude
-            # d_lon = start_longitude - end_longitude
-            # a = sin(d_lat / 2)**2 + cos(start_latitude) * cos(end_latitude) * sin(d_lon / 2)**2
-            # c = 2 * atan2(sqrt(a), sqrt(1 - a))
-            # distance = radius * c
-            # return distance / AVG_SPEED
+        
+        def get_used_lanes(node) -> list:
+            result = list()
+            for neighbor, edges in node.connections.items():
+                for edge in edges:
+                    if edge.line not in result:
+                        result.append(edge.line)
+            return result
+                
+        def estimate_time_between_points(start_latitude, start_longitude, end_latitude, end_longitude):
+            result = calculate_distance(start_latitude, start_longitude, end_latitude, end_longitude) / AVG_SPEED
+            return result
         
         start_time = time_string_to_int(start_time)
         start_node = self.find_node_from_name(start_node)
         end_node = self.find_node_from_name(end_node)
 
-        times_from_start = {node: float('inf') for node in self.nodes}
-        times_to_end_est = {node : float('inf') for node in self.nodes}
-        times_from_start[start_node] = 0.0
-        times_to_end_est[start_node] = estimate_time_between_points(start_node.latitude, start_node.longitude, end_node.latitude, end_node.longitude)
-        total_times = {node : times_from_start[node] + times_to_end_est[node] for node in self.nodes}
-
-        #time_from_start, name, total_time_to_end(est)
-        priority_queue = [(times_from_start[start_node], start_node, total_times[start_node])]
-
+        visited = set()
         previous_node = {node: None for node in self.nodes}
         previous_line = {node: None for node in self.nodes}
         previous_departure_time = {node: None for node in self.nodes}
 
-        visited = set()
-
         start_time_computation = datetime.now()
+        if (criterion == 't'):
+            times_from_start = {node: float('inf') for node in self.nodes}
+            times_to_end_est = {node : float('inf') for node in self.nodes}
+            times_from_start[start_node] = 0.0
+            times_to_end_est[start_node] = estimate_time_between_points(start_node.latitude, start_node.longitude, end_node.latitude, end_node.longitude)
+            total_times = {node : times_from_start[node] + times_to_end_est[node] for node in self.nodes}
 
-        while priority_queue:
-            current_travel_time, current_node, current_total_time = heappop(priority_queue)
+            #time_from_start, name, total_time_to_end(est)
+            priority_queue = [(times_from_start[start_node], start_node, total_times[start_node])]
+            while priority_queue:
+                current_travel_time, current_node, current_total_time = heappop(priority_queue)
 
-            if current_node == end_node: break
-            for neighbor, edges in current_node.connections.items():
-                if(neighbor in visited): continue
-                for edge in edges:
-                    if(time_string_to_int(edge.departure_time) < start_time + times_from_start[current_node]): continue
-                    neighbor_from_start =  time_string_to_int(edge.arrival_time) - start_time
-                    neighbor_to_end = estimate_time_between_points(neighbor.latitude, neighbor.longitude, end_node.latitude, end_node.longitude)
-                    neighbor_total_time = neighbor_from_start + neighbor_to_end
-                    if(neighbor_total_time >= total_times[neighbor]): continue
-                    total_times[neighbor] = neighbor_total_time
-                    times_from_start[neighbor] = neighbor_from_start
-                    times_to_end_est[neighbor] = neighbor_to_end
-                    # neighbor.parent = current_node
-                    # neighbor.used_line = edge.line
-                    priority_queue.insert(0, (neighbor_from_start, neighbor, neighbor_total_time))
-                    priority_queue.sort(key=compare_distances)
-                    previous_node[neighbor] = current_node
-                    previous_line[neighbor] = edge.line
-                    previous_departure_time[neighbor] = edge.departure_time
-                    break
-            visited.add(current_node)
+                if current_node == end_node: break
+                for neighbor, edges in current_node.connections.items():
+                    if(neighbor in visited): continue
+                    check_line_param = False
+                    for edge in edges:
+                        edge_departure = time_string_to_int(edge.departure_time)
+                        if (check_line_param):
+                            if(time_string_to_int(previous_departure_time[neighbor]) < edge_departure): break
+                            if(edge.line != previous_line[current_node]): continue
+                        if(edge_departure < start_time + times_from_start[current_node]): continue
+                        neighbor_from_start =  time_string_to_int(edge.arrival_time) - start_time
+                        neighbor_to_end = estimate_time_between_points(neighbor.latitude, neighbor.longitude, end_node.latitude, end_node.longitude)
+                        neighbor_total_time = neighbor_from_start + neighbor_to_end
+                        if(neighbor_total_time >= total_times[neighbor]): continue
+                        total_times[neighbor] = neighbor_total_time
+                        times_from_start[neighbor] = neighbor_from_start
+                        times_to_end_est[neighbor] = neighbor_to_end
+                        priority_queue.insert(0, (neighbor_from_start, neighbor, neighbor_total_time))
+                        priority_queue.sort(key=compare_distances)
+                        previous_node[neighbor] = current_node
+                        previous_line[neighbor] = edge.line
+                        previous_departure_time[neighbor] = edge.departure_time
+                        check_line_param = True
+                        # break
+                visited.add(current_node)
+        # elif (criterion == 'p'):
+        #     pass
+            # #amount of transfers needed to use this line
+            # amount_of_transfers = list()
+            # #distance to an end
+            # distance_to_end = {node : int('inf') for node in self.nodes}
+            # #lowest cost of getting to the stop
+            # cost_to_get = {node : int('inf') for node in self.nodes}
+            # #previous node
+            # previous_node = {node : None for node in self.nodes}
+            # #best lane
+            # best_lane = {node : list() for node in self.nodes}
+
+            # distance_to_end[start_node] = calculate_distance(start_node.latitude, start_node.longitude, end_node.latitude, end_node.longitude)
+            # cost_to_get[start_node] = 0
+            # help_list = get_used_lanes(start_node)
+            # amount_of_transfers.append(help_list)
+            # amount_of_transfers.append([])
+            # amount_of_transfers.append([])
+            # amount_of_transfers.append([])
+            # amount_of_transfers.append([])
+            # amount_of_transfers.append([])
+            # amount_of_transfers.append([])
+
+            # # node, cost_to_get, distance_to_end
+            # priority_queue = [(start_node, cost_to_get[start_node], distance_to_end[start_node])]
+
+            # while priority_queue:
+            #     current_node, current_used_lanes, current_distance_to_end = heappop(priority_queue)
+
+            #     if current_node == end_node: break
+            #     for neighbor, edges in current_node.connections.items():
+            #         if neighbor in visited: continue
+            #         edge_cost = cost_to_get[current_node]
+            #         cost_to_get[neighbor] = edge_cost + 1
+            #         for edge in edges:
+            #             if edge.line in amount_of_transfers[edge_cost]: cost_to_get[neighbor] = edge_cost
+            #             else: 
+            #                 if edge.line not in amount_of_transfers[edge_cost+1]: amount_of_transfers[edge_cost+1].append(edge.line)
+            
+        else: raise CriterionError("Wrong criterion given")
                     
                     
         # Compute total time taken for computation
@@ -169,10 +212,19 @@ class Graph:
 
     def calculate_travel_time(self, start_time, arrival_time_neighbor):
         return time_string_to_int(arrival_time_neighbor) - time_string_to_int(start_time)
+    
+    def create_edges_dict(self):
+        result = dict()
+        for node, edges in self.nodes.items():
+            for edge in self.edges:
+                if edge.line not in result:
+                    result.update({edge.line : int('inf')})
+        return result
 
 def time_string_to_int(time):
     time = time.split(":")
     return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2])
+
 
 class ObjectNotFoundError(Exception):
     pass

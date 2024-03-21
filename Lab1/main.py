@@ -11,7 +11,7 @@ def load_data_from_csv(filename):
     with open(filename, 'r', encoding='utf-8') as file:
         reader = csv.reader(file)
         i = 0
-        next(reader)  # Skip header row
+        next(reader)
         for row in reader:
             start_node = graph.work_on_node(row[5], row[7], row[8])
             end_node = graph.work_on_node(row[6], row[9], row[10])
