@@ -7,7 +7,7 @@ AVG_SPEED = 4
 class Graph:
     def __init__(self) -> None:
         self.nodes = set()
-        # self.edges = self.create_edges_dict()
+        self.lines = dict()
 
     #adds node to set
     def work_on_node(self, name : str, latitude : float, longitude : float) -> Node:
@@ -18,6 +18,15 @@ class Graph:
         node = Node.Node(name, latitude, longitude)
         self.nodes.add(node)
         return node
+    
+    def work_on_line(self, line : str, start_node : Node, end_node : Node):
+        if line not in self.lines:
+            self.lines[line] = [start_node, end_node]
+            # self.lines.update(line, [start_node, end_node])
+            return
+        current_line : list = self.lines.get(line)
+        if start_node not in current_line: current_line.append(start_node)
+        if end_node not in current_line: current_line.append(end_node)
     
     def find_node_from_name(self, node_name):
         for element in self.nodes:
@@ -220,11 +229,16 @@ class Graph:
                 if edge.line not in result:
                     result.update({edge.line : int('inf')})
         return result
+    
+    def print_lines(self):
+        for key, values in self.lines.items():
+            print(key)
+            for value in values:
+                print("\t"+value.name)
 
 def time_string_to_int(time):
     time = time.split(":")
     return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2])
-
 
 class ObjectNotFoundError(Exception):
     pass

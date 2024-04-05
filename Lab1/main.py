@@ -4,7 +4,8 @@ from datetime import datetime
 import time
 import Node, Edge, Graph
 import math
-FILE_PATH = "Lab1\connection_graph.csv"
+import sys
+FILE_PATH = r"connection_graph.csv"
             
 def load_data_from_csv(filename):
     graph = Graph.Graph()
@@ -17,6 +18,7 @@ def load_data_from_csv(filename):
             end_node = graph.work_on_node(row[6], row[9], row[10])
             start_node.work_on_end_node(end_node)
             start_node.work_on_connection(end_node, row[0], row[2], row[3], row[4])
+            graph.work_on_line(row[2], start_node, end_node)
             i += 1
             # if (i == 10000): break
     return graph   
@@ -47,7 +49,6 @@ def print_results(shortest_distance, computation_time, schedule, visited):
     print("Computation time:", computation_time)
     print("=================================================================")
     
-
 def dijkstra_tests():
     def test1():
         shortest_distance, computation_time, schedule, visited = graph.dijkstra("KROMERA", "Katedra", "21:15:00")
@@ -115,5 +116,19 @@ def astar_tests():
     print("*******************************************************************")
 
 graph = build_graph()
-dijkstra_tests()
-astar_tests()
+# graph.print_lines()
+
+# if __name__ == "__main__":
+#     stop = False
+#     graph = build_graph()
+#     while not stop:
+#         alghoritm = input("Which alghoritm would you like to use? Type: A* - A; Dijkstra - D: ").upper()
+#         departure_time = input("Input the time when you want to start your journey: ")
+#         start_stop = input("Input the stop name where you want to start your journey: ")
+#         end_stop = input("Input the stop name where you want to finish your journey: ")
+#         if alghoritm == "A":
+#             shortest_distance, computation_time, schedule, visited = graph.astar(start_stop, end_stop, departure_time)
+#             print_results(shortest_distance, computation_time, schedule, visited)
+#         elif alghoritm == "D":
+#             shortest_distance, computation_time, schedule, visited = graph.dijkstra(start_stop, end_stop, departure_time)
+#             print_results(shortest_distance, computation_time, schedule, visited)
