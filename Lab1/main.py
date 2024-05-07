@@ -116,19 +116,18 @@ def astar_tests():
     print("*******************************************************************")
 
 graph = build_graph()
-# graph.print_lines()
-
-# if __name__ == "__main__":
-#     stop = False
-#     graph = build_graph()
-#     while not stop:
-#         alghoritm = input("Which alghoritm would you like to use? Type: A* - A; Dijkstra - D: ").upper()
-#         departure_time = input("Input the time when you want to start your journey: ")
-#         start_stop = input("Input the stop name where you want to start your journey: ")
-#         end_stop = input("Input the stop name where you want to finish your journey: ")
-#         if alghoritm == "A":
-#             shortest_distance, computation_time, schedule, visited = graph.astar(start_stop, end_stop, departure_time)
-#             print_results(shortest_distance, computation_time, schedule, visited)
-#         elif alghoritm == "D":
-#             shortest_distance, computation_time, schedule, visited = graph.dijkstra(start_stop, end_stop, departure_time)
-#             print_results(shortest_distance, computation_time, schedule, visited)
+graph.print_lines()
+if __name__ == "__main__":
+    stop = False
+    graph = build_graph()
+    while not stop:
+        algorithm = input("Which algorithm would you like to use? Type: A* - A; Dijkstra - D: ").upper()
+        departure_time = input("Input the time when you want to start your journey: ")
+        start_stop = input("Input the stop name where you want to start your journey: ")
+        end_stop = input("Input the stop name where you want to finish your journey: ")
+        if algorithm == "A":
+            shortest_distance, computation_time, schedule, visited = graph.astar(start_stop, end_stop, departure_time)
+            print_results(shortest_distance, computation_time, schedule, visited)
+        elif algorithm == "D":
+            shortest_distance, computation_time, schedule, visited = graph.dijkstra(start_stop, end_stop, departure_time)
+            print_results(shortest_distance, computation_time, schedule, visited)
