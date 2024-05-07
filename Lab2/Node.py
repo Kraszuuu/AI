@@ -76,7 +76,7 @@ class Node:
             #Top
             if y > 1:
                 #Left
-                if x > 1 and currentBoardState[y-1][x-1] != 0 and lastPosition != (y-2,x-2):
+                if x > 1 and currentBoardState[y-1][x-1] != 0 and lastPosition != (x-2,y-2):
                     fixedBoardState = createFixedBoardState(x, y, x-2, y-2, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
                     checkMoves(x-2, y-2, (x,y), fixedBoard)
@@ -210,7 +210,7 @@ class Node:
 
 node = Node(Board.Board(INDIRECT_BOARD2))
 # node.board.printBoard()
-# node.generateDirectMoves()
+node.generateDirectMoves()
 node.generateIndirectMoves()
 for child in node.children:
     child.board.printBoard()
