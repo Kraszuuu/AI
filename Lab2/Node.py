@@ -67,11 +67,12 @@ class Node:
         self.children : list = []
         self.parent : Node = None
 
-        self.currentPlayer : int = self.decidePlayer()  
+        self.currentPlayer : int = 1
+        self.decidePlayer()
 
     def decidePlayer(self):
-        if self.parent == None or self.parent.currentPlayer == 1: self.currentPlayer = 2
-        else: self.currentPlayer = 1
+        if self.parent == None or self.parent.currentPlayer == 2: self.currentPlayer = 1
+        else: self.currentPlayer = 2
 
     def generateIndirectMoves(self):
         def checkMoves(x : int, y : int, lastPosition : tuple, currentBoard : Board):
@@ -79,44 +80,44 @@ class Node:
             #Top
             if y > 1:
                 #Left
-                if x > 1 and currentBoardState[y-1][x-1] != 0 and lastPosition != (x-2,y-2):
+                if x > 1 and currentBoardState[y-1][x-1] != 0 and currentBoardState[y-2][x-2] == 0 and lastPosition != (x-2,y-2):
                     fixedBoardState = createFixedBoardState(x, y, x-2, y-2, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
                     checkMoves(x-2, y-2, (x,y), fixedBoard)
                 #Mid
-                if currentBoardState[y-1][x] != 0 and lastPosition != (x, y-2):
+                if currentBoardState[y-1][x] != 0 and currentBoardState[y-2][x] == 0 and lastPosition != (x, y-2):
                     fixedBoardState = createFixedBoardState(x, y, x, y-2, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
                     checkMoves(x, y-2, (x,y), fixedBoard)
                 #Right
-                if x < 14 and currentBoardState[y-1][x+1] != 0 and lastPosition != (x+2, y-2):
+                if x < 14 and currentBoardState[y-1][x+1] != 0 and currentBoardState[y-2][x+2] == 0 and lastPosition != (x+2, y-2):
                     fixedBoardState = createFixedBoardState(x, y, x+2, y-2, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
                     checkMoves(x+2, y-2, (x,y), fixedBoard)
             #Mid Left
-            if x > 1 and currentBoardState[y][x-1] != 0 and lastPosition != (x-2, y):
+            if x > 1 and currentBoardState[y][x-1] != 0 and currentBoardState[y][x-2] == 0 and lastPosition != (x-2, y):
                 fixedBoardState = createFixedBoardState(x, y, x-2, y, currentBoard)
                 fixedBoard = createKid(self, fixedBoardState)
                 checkMoves(x-2, y, (x,y), fixedBoard)
             #Mid Right
-            if x < 14 and currentBoardState[y][x+1] != 0 and lastPosition != (x+2, y):
+            if x < 14 and currentBoardState[y][x+1] != 0 and currentBoardState[y][x+2] == 0 and lastPosition != (x+2, y):
                 fixedBoardState = createFixedBoardState(x, y, x+2, y, currentBoard)
                 fixedBoard = createKid(self, fixedBoardState)
                 checkMoves(x+2, y, (x,y), fixedBoard)
             #Bot 
             if y < 14:
                 #Left
-                if x > 1 and currentBoardState[y+1][x-1] != 0 and lastPosition != (x-2, y+2):
+                if x > 1 and currentBoardState[y+1][x-1] != 0 and currentBoardState[y+2][x-2] == 0 and lastPosition != (x-2, y+2):
                     fixedBoardState = createFixedBoardState(x, y, x-2, y+2, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
                     checkMoves(x-2,y+2, (x,y), fixedBoard)
                 #Mid
-                if currentBoardState[y+1][x] != 0 and lastPosition != (x, y+2):
+                if currentBoardState[y+1][x] != 0 and currentBoardState[y+2][x] == 0 and lastPosition != (x, y+2):
                     fixedBoardState = createFixedBoardState(x, y, x, y+2, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
                     checkMoves(x, y+2, (x,y), fixedBoard)
                 #Right
-                if x < 14 and currentBoardState[y+1][x+1] != 0 and lastPosition != (x+2, y+2):
+                if x < 14 and currentBoardState[y+1][x+1] != 0 and currentBoardState[y+2][x+2] == 0 and lastPosition != (x+2, y+2):
                     fixedBoardState = createFixedBoardState(x, y, x+2, y+2, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
                     checkMoves(x+2, y+2, (x,y), fixedBoard)
