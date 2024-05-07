@@ -50,7 +50,7 @@ INDIRECT_BOARD2 = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -67,7 +67,11 @@ class Node:
         self.children : list = []
         self.parent : Node = None
 
-        self.currentPlayer : int = 1         
+        self.currentPlayer : int = self.decidePlayer()  
+
+    def decidePlayer(self):
+        if self.parent == None or self.parent.currentPlayer == 1: self.currentPlayer = 2
+        else: self.currentPlayer = 1
 
     def generateIndirectMoves(self):
         def checkMoves(x : int, y : int, lastPosition : tuple, currentBoard : Board):
@@ -207,16 +211,19 @@ class Node:
                     createKid(self, fixedBoardState)
                     counter +=1
     
-    def sortChildren(self):
-        self.children.sort()
+    def generateMoves(self):
+        self.generateDirectMoves()
+        self.generateIndirectMoves()
+    
+    def printNode(self):
+        self.board.printBoard()
 
-node = Node(Board.Board(INDIRECT_BOARD2))
-# node.board.printBoard()
-node.generateDirectMoves()
-node.generateIndirectMoves()
-for child in node.children:
-    child.board.printBoard()
-print(len(node.children))
+# node = Node(Board.Board(INDIRECT_BOARD2))
+# node.generateDirectMoves()
+# node.generateIndirectMoves()
+# for child in node.children:
+#     child.board.printBoard()
+# print(len(node.children))
 
 # node1 = Node(Board.Board(INDIRECT_BOARD2))
 # board11 = node1.board.copyBoardState()
