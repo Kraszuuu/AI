@@ -1,5 +1,4 @@
 import Board
-from typing import List
 
 START_BOARD = [
         [1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
@@ -125,7 +124,7 @@ class Node:
             parentNode.children.append(newNode)
             return newBoard
 
-        def createFixedBoardState(oldX : int, oldY : int, newX : int, newY : int, givenBoard : Board) -> List[List[int]]:
+        def createFixedBoardState(oldX : int, oldY : int, newX : int, newY : int, givenBoard : Board) -> list[list[int]]:
             fixedBoardState = givenBoard.copyBoardState()
             fixedBoardState[newY][newX] = fixedBoardState[oldY][oldX]
             fixedBoardState[oldY][oldX] = 0
@@ -207,6 +206,9 @@ class Node:
                     fixedBoardState = createFixedBoardState(x, y, x+1, y+1)
                     createKid(self, fixedBoardState)
                     counter +=1
+    
+    def sortChildren(self):
+        self.children.sort()
 
 node = Node(Board.Board(INDIRECT_BOARD2))
 # node.board.printBoard()
