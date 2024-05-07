@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 
 START_BOARD = [
         [1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
@@ -45,7 +46,7 @@ WIN_ONE_BOARD = [
 #   - win conditions
 class Board:
     def __init__(self, boardState) -> None:
-        self.boardState : int[[]] = boardState
+        self.boardState : List[List[int]] = boardState
         self.campOne : list = self.defineCampOne()
         self.campTwo : list = self.defineCampTwo()
         self.currentOnes : list = self.addElements(1)
