@@ -50,7 +50,7 @@ INDIRECT_BOARD2 = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -61,167 +61,144 @@ INDIRECT_BOARD2 = [
 
 
 class Node:
-    def __init__(self, board : Board) -> None:
-        self.value : int = board.value
+    def __init__(self, board : Board, parent : 'Node' = None) -> None:
         self.board : Board = board
-        self.children : list = []
-        self.parent : Node = None
+        self.value : int = board.value
+        self.children : list[Node] = []
+        self.parent : Node = parent
+        self.currentPlayer : int = parent.currentPlayer % 2 + 1 if parent != None else 1
 
-        self.currentPlayer : int = 1
-        self.decidePlayer()
+    # Creates all kinds of movement
+    def generateMoves(self):
+        # Creates direct moves (movements in 8 possible directions)
+        def generateDirectMoves(givenBoard : Board, allPieces : list):
+            def checkMoves(x : int, y : int, currentBoard : Board):
+                currentBoardState = currentBoard.boardState
+                #Top
+                if y > 0:
+                    #Left
+                    if x > 0 and currentBoardState[y-1][x-1] == 0:
+                        fixedBoardState = createFixedBoardState(x, y, x-1, y-1, givenBoard)
+                        createKid(self, fixedBoardState)
+                    #Mid
+                    if currentBoardState[y-1][x] == 0:
+                        fixedBoardState = createFixedBoardState(x, y, x, y-1, givenBoard)
+                        createKid(self, fixedBoardState)
+                    #Right
+                    if x < 15 and currentBoardState[y-1][x+1] == 0:
+                        fixedBoardState = createFixedBoardState(x, y, x+1, y-1, givenBoard)
+                        createKid(self, fixedBoardState)
+                #Mid Left
+                if x > 0 and currentBoardState[y][x-1] == 0:
+                    fixedBoardState = createFixedBoardState(x, y, x-1, y, givenBoard)
+                    createKid(self, fixedBoardState)
+                #Mid Right
+                if x < 15 and currentBoardState[y][x+1] == 0:
+                    fixedBoardState = createFixedBoardState(x, y, x+1, y, givenBoard)
+                    createKid(self, fixedBoardState)
+                #Bot 
+                if y < 15:
+                    #Left
+                    if x > 0 and currentBoardState[y+1][x-1] == 0:
+                        fixedBoardState = createFixedBoardState(x, y, x-1, y+1, givenBoard)
+                        createKid(self, fixedBoardState)
+                    #Mid
+                    if currentBoardState[y+1][x] == 0:
+                        fixedBoardState = createFixedBoardState(x, y, x, y+1, givenBoard)
+                        createKid(self, fixedBoardState)
+                    #Right
+                    if x < 15 and currentBoardState[y+1][x+1] == 0:
+                        fixedBoardState = createFixedBoardState(x, y, x+1, y+1, givenBoard)
+                        createKid(self, fixedBoardState)
 
-    def decidePlayer(self):
-        if self.parent == None or self.parent.currentPlayer == 2: self.currentPlayer = 1
-        else: self.currentPlayer = 2
+            for piece in allPieces:
+                x = piece[1]
+                y = piece[0]
+                checkMoves(x, y, givenBoard)
 
-    def generateIndirectMoves(self):
-        def checkMoves(x : int, y : int, lastPosition : tuple, currentBoard : Board):
-            currentBoardState = currentBoard.boardState
-            #Top
-            if y > 1:
-                #Left
-                if x > 1 and currentBoardState[y-1][x-1] != 0 and currentBoardState[y-2][x-2] == 0 and lastPosition != (x-2,y-2):
-                    fixedBoardState = createFixedBoardState(x, y, x-2, y-2, currentBoard)
+        # Creates indirect moves (moves that include jumping over other pieces)
+        def generateIndirectMoves(givenBoard : Board, allPieces : list):
+            def checkMoves(x : int, y : int, lastPosition : tuple, currentBoard : Board):
+                currentBoardState = currentBoard.boardState
+                #Top
+                if y > 1:
+                    #Left
+                    if x > 1 and currentBoardState[y-1][x-1] != 0 and currentBoardState[y-2][x-2] == 0 and lastPosition != (x-2,y-2):
+                        fixedBoardState = createFixedBoardState(x, y, x-2, y-2, currentBoard)
+                        fixedBoard = createKid(self, fixedBoardState)
+                        checkMoves(x-2, y-2, (x,y), fixedBoard)
+                    #Mid
+                    if currentBoardState[y-1][x] != 0 and currentBoardState[y-2][x] == 0 and lastPosition != (x, y-2):
+                        fixedBoardState = createFixedBoardState(x, y, x, y-2, currentBoard)
+                        fixedBoard = createKid(self, fixedBoardState)
+                        checkMoves(x, y-2, (x,y), fixedBoard)
+                    #Right
+                    if x < 14 and currentBoardState[y-1][x+1] != 0 and currentBoardState[y-2][x+2] == 0 and lastPosition != (x+2, y-2):
+                        fixedBoardState = createFixedBoardState(x, y, x+2, y-2, currentBoard)
+                        fixedBoard = createKid(self, fixedBoardState)
+                        checkMoves(x+2, y-2, (x,y), fixedBoard)
+                #Mid Left
+                if x > 1 and currentBoardState[y][x-1] != 0 and currentBoardState[y][x-2] == 0 and lastPosition != (x-2, y):
+                    fixedBoardState = createFixedBoardState(x, y, x-2, y, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
-                    checkMoves(x-2, y-2, (x,y), fixedBoard)
-                #Mid
-                if currentBoardState[y-1][x] != 0 and currentBoardState[y-2][x] == 0 and lastPosition != (x, y-2):
-                    fixedBoardState = createFixedBoardState(x, y, x, y-2, currentBoard)
+                    checkMoves(x-2, y, (x,y), fixedBoard)
+                #Mid Right
+                if x < 14 and currentBoardState[y][x+1] != 0 and currentBoardState[y][x+2] == 0 and lastPosition != (x+2, y):
+                    fixedBoardState = createFixedBoardState(x, y, x+2, y, currentBoard)
                     fixedBoard = createKid(self, fixedBoardState)
-                    checkMoves(x, y-2, (x,y), fixedBoard)
-                #Right
-                if x < 14 and currentBoardState[y-1][x+1] != 0 and currentBoardState[y-2][x+2] == 0 and lastPosition != (x+2, y-2):
-                    fixedBoardState = createFixedBoardState(x, y, x+2, y-2, currentBoard)
-                    fixedBoard = createKid(self, fixedBoardState)
-                    checkMoves(x+2, y-2, (x,y), fixedBoard)
-            #Mid Left
-            if x > 1 and currentBoardState[y][x-1] != 0 and currentBoardState[y][x-2] == 0 and lastPosition != (x-2, y):
-                fixedBoardState = createFixedBoardState(x, y, x-2, y, currentBoard)
-                fixedBoard = createKid(self, fixedBoardState)
-                checkMoves(x-2, y, (x,y), fixedBoard)
-            #Mid Right
-            if x < 14 and currentBoardState[y][x+1] != 0 and currentBoardState[y][x+2] == 0 and lastPosition != (x+2, y):
-                fixedBoardState = createFixedBoardState(x, y, x+2, y, currentBoard)
-                fixedBoard = createKid(self, fixedBoardState)
-                checkMoves(x+2, y, (x,y), fixedBoard)
-            #Bot 
-            if y < 14:
-                #Left
-                if x > 1 and currentBoardState[y+1][x-1] != 0 and currentBoardState[y+2][x-2] == 0 and lastPosition != (x-2, y+2):
-                    fixedBoardState = createFixedBoardState(x, y, x-2, y+2, currentBoard)
-                    fixedBoard = createKid(self, fixedBoardState)
-                    checkMoves(x-2,y+2, (x,y), fixedBoard)
-                #Mid
-                if currentBoardState[y+1][x] != 0 and currentBoardState[y+2][x] == 0 and lastPosition != (x, y+2):
-                    fixedBoardState = createFixedBoardState(x, y, x, y+2, currentBoard)
-                    fixedBoard = createKid(self, fixedBoardState)
-                    checkMoves(x, y+2, (x,y), fixedBoard)
-                #Right
-                if x < 14 and currentBoardState[y+1][x+1] != 0 and currentBoardState[y+2][x+2] == 0 and lastPosition != (x+2, y+2):
-                    fixedBoardState = createFixedBoardState(x, y, x+2, y+2, currentBoard)
-                    fixedBoard = createKid(self, fixedBoardState)
-                    checkMoves(x+2, y+2, (x,y), fixedBoard)
+                    checkMoves(x+2, y, (x,y), fixedBoard)
+                #Bot 
+                if y < 14:
+                    #Left
+                    if x > 1 and currentBoardState[y+1][x-1] != 0 and currentBoardState[y+2][x-2] == 0 and lastPosition != (x-2, y+2):
+                        fixedBoardState = createFixedBoardState(x, y, x-2, y+2, currentBoard)
+                        fixedBoard = createKid(self, fixedBoardState)
+                        checkMoves(x-2,y+2, (x,y), fixedBoard)
+                    #Mid
+                    if currentBoardState[y+1][x] != 0 and currentBoardState[y+2][x] == 0 and lastPosition != (x, y+2):
+                        fixedBoardState = createFixedBoardState(x, y, x, y+2, currentBoard)
+                        fixedBoard = createKid(self, fixedBoardState)
+                        checkMoves(x, y+2, (x,y), fixedBoard)
+                    #Right
+                    if x < 14 and currentBoardState[y+1][x+1] != 0 and currentBoardState[y+2][x+2] == 0 and lastPosition != (x+2, y+2):
+                        fixedBoardState = createFixedBoardState(x, y, x+2, y+2, currentBoard)
+                        fixedBoard = createKid(self, fixedBoardState)
+                        checkMoves(x+2, y+2, (x,y), fixedBoard)
 
-        def createKid(parentNode : Node, fixedBoardState) -> Board:
-            newBoard = Board.Board(fixedBoardState)
-            newNode = Node(newBoard)
-            newNode.parent = parentNode
-            parentNode.children.append(newNode)
-            return newBoard
+            for piece in allPieces:
+                x = piece[1]
+                y = piece[0]
+                checkMoves(x, y, (x,y), givenBoard)
 
+            # Returns copy of board 
+    
         def createFixedBoardState(oldX : int, oldY : int, newX : int, newY : int, givenBoard : Board) -> list[list[int]]:
             fixedBoardState = givenBoard.copyBoardState()
             fixedBoardState[newY][newX] = fixedBoardState[oldY][oldX]
             fixedBoardState[oldY][oldX] = 0
             return fixedBoardState
-
-        board = self.board
-        if self.currentPlayer == 1: allPieces = self.board.currentOnes
-        elif self.currentPlayer == 2: allPieces = self.board.currentTwos
-        else: raise Exception("Unknown player. Only possible players are: 1 and 2.")
-        for piece in allPieces:
-            x = piece[1]
-            y = piece[0]
-            checkMoves(x, y, (x,y), board)
-
-    def generateDirectMoves(self):
-        def createKid(self, fixedBoardState) -> None:
+        
+        # Creates kid node. Assigns its parent, also returns node itself (optional)
+        def createKid(parentNode : 'Node', fixedBoardState) -> Board:
             newBoard = Board.Board(fixedBoardState)
-            newNode = Node(newBoard)
-            newNode.parent = self
-            self.children.append(newNode)
+            newNode = Node(newBoard, parentNode)
+            # newNode.parent = parentNode
+            parentNode.children.append(newNode)
+            return newBoard
 
-        def createFixedBoardState(oldX, oldY, newX, newY):
-            fixedBoardState = board.copyBoardState()
-            fixedBoardState[newY][newX] = fixedBoardState[oldY][oldX]
-            fixedBoardState[oldY][oldX] = 0
-            return fixedBoardState
-
-        board = self.board
-        boardState = self.board.boardState
-        counter = 0
+        givenBoard = self.board
         if self.currentPlayer == 1: allPieces = self.board.currentOnes
         elif self.currentPlayer == 2: allPieces = self.board.currentTwos
         else: raise Exception("Unknown player. Only possible players are: 1 and 2.")
-        for piece in allPieces:
-            x = piece[1]
-            y = piece[0]
-            #Direct Moves
-            #Top
-            if y > 0:
-                #Left
-                if x > 0 and boardState[y-1][x-1] == 0:
-                    fixedBoardState = createFixedBoardState(x, y, x-1, y-1)
-                    createKid(self, fixedBoardState)
-                    counter +=1
-                #Mid
-                if boardState[y-1][x] == 0:
-                    fixedBoardState = createFixedBoardState(x, y, x, y-1)
-                    createKid(self, fixedBoardState)
-                    counter +=1
-                #Right
-                if x < 15 and boardState[y-1][x+1] == 0:
-                    fixedBoardState = createFixedBoardState(x, y, x+1, y-1)
-                    createKid(self, fixedBoardState)
-                    counter +=1
-            #Mid Left
-            if x > 0 and boardState[y][x-1] == 0:
-                fixedBoardState = createFixedBoardState(x, y, x-1, y)
-                createKid(self, fixedBoardState)
-                counter +=1
-            #Mid Right
-            if x < 15 and boardState[y][x+1] == 0:
-                fixedBoardState = createFixedBoardState(x, y, x+1, y)
-                createKid(self, fixedBoardState)
-                counter +=1
-            #Bot 
-            if y < 15:
-                #Left
-                if x > 0 and boardState[y+1][x-1] == 0:
-                    fixedBoardState = createFixedBoardState(x, y, x-1, y+1)
-                    createKid(self, fixedBoardState)
-                    counter +=1
-                #Mid
-                if boardState[y+1][x] == 0:
-                    fixedBoardState = createFixedBoardState(x, y, x, y+1)
-                    createKid(self, fixedBoardState)
-                    counter +=1
-                #Right
-                if x < 15 and boardState[y+1][x+1] == 0:
-                    fixedBoardState = createFixedBoardState(x, y, x+1, y+1)
-                    createKid(self, fixedBoardState)
-                    counter +=1
-    
-    def generateMoves(self):
-        self.generateDirectMoves()
-        self.generateIndirectMoves()
+
+        generateDirectMoves(givenBoard, allPieces)
+        generateIndirectMoves(givenBoard, allPieces)
     
     def printNode(self):
         self.board.printBoard()
 
 # node = Node(Board.Board(INDIRECT_BOARD2))
-# node.generateDirectMoves()
-# node.generateIndirectMoves()
+# node.generateMoves()
 # for child in node.children:
 #     child.board.printBoard()
 # print(len(node.children))
