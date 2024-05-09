@@ -68,5 +68,9 @@ board = Board(START_BOARD)
 startNode = Node(board)
 tree = Tree(startNode, CURRENT_DEPTH)
 isPlaying = True
+
+# while (isPlaying):
+#         isPlaying = tree.playUsingMinmax()
+
 while (isPlaying):
-        isPlaying = tree.playUsingMinmax()
+    isPlaying = tree.playUsingAlphaBeta()
