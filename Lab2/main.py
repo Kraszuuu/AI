@@ -3,7 +3,7 @@ from Node import Node
 from Board import Board
 import sys
 
-CURRENT_DEPTH = 3
+CURRENT_DEPTH = 2
 
 START_BOARD = [
         [1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],

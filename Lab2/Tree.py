@@ -25,29 +25,7 @@ class Tree:
                     givenNode.nextNode = child
 
         return value
-    
-    # def alfaBeta(self, givenNode : Node, currentDepth : int, alfa = -9999, beta = 9999) -> int:
-    #     if currentDepth == self.depth - 1 or givenNode.board.isOver != 0:
-    #         return givenNode.value
-        
-    #     if givenNode.currentPlayer == 1:
-    #         for child in givenNode.children:
-    #             if beta > self.alfaBeta(child, currentDepth+1, alfa, beta):
-    #                 beta = self.alfaBeta(child, currentDepth+1, alfa, beta)
-    #                 givenNode.value = beta
-    #                 givenNode.nextNode = child
-    #             if alfa >= beta: break
 
-
-    #     else:
-    #         for child in givenNode.children:
-    #             if alfa < self.alfaBeta(child, currentDepth+1, alfa, beta):
-    #                 alfa = self.alfaBeta(child, currentDepth+1, alfa, beta)
-    #                 givenNode.value = alfa
-    #                 givenNode.nextNode = child
-    #             if alfa >= beta: break
-
-    #     return givenNode.value
 
     def alphaBeta(self, givenNode : Node, currentDepth : int, alpha = -9999, beta = 9999) -> int:
         if currentDepth == self.depth - 1 or givenNode.board.isOver != 0:
@@ -56,20 +34,23 @@ class Tree:
         if givenNode.currentPlayer == 1:
             value = float('-inf')
             for child in givenNode.children:
-                value = max(value, self.alphaBeta(child, currentDepth + 1, alpha, beta))
-                alpha = max(alpha, value)
-                givenNode.value = value
-                givenNode.nextNode = child
+                helper = self.alphaBeta(child, currentDepth + 1, alpha, beta)
+                if value < helper:
+                    value = helper
+                    alpha = max(alpha, value)
+                    givenNode.value = value
+                    givenNode.nextNode = child
                 if beta <= alpha:
                     break
 
         else:
             value = float('inf')
             for child in givenNode.children:
-                value = min(value, self.alphaBeta(child, currentDepth + 1, alpha, beta))
-                beta = min(beta, value)
-                givenNode.value = value
-                givenNode.nextNode = child
+                helper = self.alphaBeta(child, currentDepth + 1, alpha, beta)
+                if value > helper:
+                    beta = min(beta, value)
+                    givenNode.value = value
+                    givenNode.nextNode = child
                 if beta <= alpha:
                     break
 
