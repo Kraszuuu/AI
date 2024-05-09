@@ -3,6 +3,8 @@ from Node import Node
 from Board import Board
 import sys
 
+CURRENT_DEPTH = 3
+
 START_BOARD = [
         [1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
         [1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
@@ -25,7 +27,6 @@ START_BOARD = [
 #14+8
 SIMPLE_BOARD = [
         [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -36,9 +37,10 @@ SIMPLE_BOARD = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2]
 ]
 
@@ -61,10 +63,10 @@ INDIRECT_BOARD1 = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2]
 ]
 
-board = Board(INDIRECT_BOARD1)
+sys.setrecursionlimit(100000)
+board = Board(START_BOARD)
 startNode = Node(board)
-# startNode.printNode()
-tree = Tree(startNode, 3)
-tree.generateChildren(tree.root)
-tree.printTreeDownNode(tree.root)
-# print(tree.findMinimalAndMaximal(tree.root, 3))
+tree = Tree(startNode, CURRENT_DEPTH)
+isPlaying = True
+while (isPlaying):
+        isPlaying = tree.playUsingMinmax()
